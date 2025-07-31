@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 interface FormData {
@@ -16,9 +16,16 @@ function App() {
     endHour: '23',
   })
   const [message, setMessage] = useState('')
+  const [courses, setCourses] = useState<string[]>([])
 
   const hours = Array.from({ length: 24 }, (_, i) => i)
-  const courses = ['Course A', 'Course B', 'Course C']
+
+  useEffect(() => {
+    fetch('/courses')
+      .then((res) => res.json())
+      .then((data: string[]) => setCourses(data))
+      .catch(() => setCourses([]))
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -40,11 +47,10 @@ function App() {
       } else {
         setMessage('Error submitting form')
       }
-    } catch (err) {
+    } catch {
       setMessage('Error submitting form')
     }
   }
-
   return (
     <div className="container">
       <h1>Tee Time Alerts</h1>
