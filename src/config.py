@@ -15,3 +15,7 @@ FOREUP_API_BASE = os.getenv(
 )
 
 EMAIL_LIST_FILE = os.getenv("EMAIL_LIST_FILE", "emails.txt")
+FOREUP_BOOKING_URL = os.getenv(
+    "FOREUP_BOOKING_URL",
+    "https://foreupsoftware.com/index.php/booking/20290"
+)

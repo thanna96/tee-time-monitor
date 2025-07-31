@@ -2,6 +2,8 @@
 import os
 from flask import Flask, request, send_from_directory, jsonify
 
+from course_fetcher import fetch_courses
+
 EMAIL_LIST_FILE = os.getenv("EMAIL_LIST_FILE", "emails.txt")
 
 app = Flask(__name__, static_folder="../frontend/dist", static_url_path="")
@@ -23,6 +25,12 @@ def subscribe():
     with open(EMAIL_LIST_FILE, "a") as fh:
         fh.write(line)
     return jsonify({"message": "Subscription saved!"})
+
+
+@app.route("/courses")
+def courses():
+    """Return a list of course names scraped from the booking page."""
+    return jsonify(fetch_courses())
 
 if __name__ == "__main__":
     app.run(debug=True)
