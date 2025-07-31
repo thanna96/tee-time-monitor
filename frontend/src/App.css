@@ -1,0 +1,17 @@
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+form > div {
+  margin-bottom: 1rem;
+}
+
+.hour-selects {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}

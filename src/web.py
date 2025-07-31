@@ -1,40 +1,28 @@
 """Simple web frontend for collecting subscriber emails."""
 import os
-from flask import Flask, request, render_template_string
+from flask import Flask, request, send_from_directory, jsonify
 
 EMAIL_LIST_FILE = os.getenv("EMAIL_LIST_FILE", "emails.txt")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../frontend/dist", static_url_path="")
 
-INDEX_TEMPLATE = """
-<!doctype html>
-<title>Subscribe for Tee Time Alerts</title>
-<h1>Subscribe for Tee Time Alerts</h1>
-<form method="post" action="/subscribe">
-  <input type="email" name="email" placeholder="Enter your email" required />
-  <button type="submit">Subscribe</button>
-</form>
-{% if message %}<p>{{ message }}</p>{% endif %}
-"""
-
-
-@app.route("/", methods=["GET"])
+@app.route("/")
 def index():
-    return render_template_string(INDEX_TEMPLATE, message=None)
-
+    return send_from_directory(app.static_folder, "index.html")
 
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
-    email = request.form.get("email")
-    message = ""
-    if email:
-        with open(EMAIL_LIST_FILE, "a") as fh:
-            fh.write(email.strip() + "\n")
-        message = "Subscription saved!"
-    else:
-        message = "No email provided."
-    return render_template_string(INDEX_TEMPLATE, message=message)
-
+    data = request.get_json(force=True)
+    email = (data.get("email") or "").strip()
+    course = data.get("course", "").strip()
+    start_hour = data.get("startHour", "")
+    end_hour = data.get("endHour", "")
+    if not email:
+        return jsonify({"message": "No email provided."}), 400
+    line = f"{email},{course},{start_hour},{end_hour}\n"
+    with open(EMAIL_LIST_FILE, "a") as fh:
+        fh.write(line)
+    return jsonify({"message": "Subscription saved!"})
 
 if __name__ == "__main__":
     app.run(debug=True)
