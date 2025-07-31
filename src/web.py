@@ -1,8 +1,10 @@
 """Simple web frontend for collecting subscriber emails."""
 import os
+from datetime import date
 from flask import Flask, request, send_from_directory, jsonify
 
 from course_fetcher import fetch_courses
+from tee_time_checker import get_available_tee_times
 
 EMAIL_LIST_FILE = os.getenv("EMAIL_LIST_FILE", "emails.txt")
 
@@ -31,6 +33,36 @@ def subscribe():
 def courses():
     """Return a list of course names scraped from the booking page."""
     return jsonify(fetch_courses())
+
+
+@app.route("/times")
+def times():
+    """Return available tee times for a given date and optional filters."""
+    day_str = request.args.get("date", "")
+    if not day_str:
+        return jsonify({"error": "Missing date"}), 400
+    try:
+        day = date.fromisoformat(day_str)
+    except ValueError:
+        return jsonify({"error": "Invalid date"}), 400
+
+    course = request.args.get("course") or None
+    try:
+        start_hour = int(request.args.get("startHour"))
+    except (TypeError, ValueError):
+        start_hour = None
+    try:
+        end_hour = int(request.args.get("endHour"))
+    except (TypeError, ValueError):
+        end_hour = None
+
+    times = get_available_tee_times(
+        day,
+        course=course,
+        start_hour=start_hour,
+        end_hour=end_hour,
+    )
+    return jsonify(times)
 
 if __name__ == "__main__":
     app.run(debug=True)
