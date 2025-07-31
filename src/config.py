@@ -13,3 +13,5 @@ FOREUP_API_BASE = os.getenv(
     "FOREUP_API_BASE",
     "https://foreup.example.com/api/location/{location_id}/times"
 )
+
+EMAIL_LIST_FILE = os.getenv("EMAIL_LIST_FILE", "emails.txt")
