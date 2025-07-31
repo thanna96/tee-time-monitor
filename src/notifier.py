@@ -6,6 +6,17 @@ import smtplib
 import config
 
 
+def has_subscribers() -> bool:
+    """Return ``True`` if at least one email is stored."""
+    if not os.path.exists(config.EMAIL_LIST_FILE):
+        return False
+    with open(config.EMAIL_LIST_FILE) as fh:
+        for line in fh:
+            if line.strip():
+                return True
+    return False
+
+
 def _default_recipients() -> list[str]:
     emails: list[str] = []
     if os.path.exists(config.EMAIL_LIST_FILE):

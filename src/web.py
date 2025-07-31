@@ -1,12 +1,16 @@
 """Simple web frontend for collecting subscriber emails."""
 import os
 from datetime import date
+from threading import Thread
 from flask import Flask, request, send_from_directory, jsonify
 
+import config
 from course_fetcher import fetch_courses
 from tee_time_checker import get_available_tee_times
+from main import monitor
+from notifier import has_subscribers
 
-EMAIL_LIST_FILE = os.getenv("EMAIL_LIST_FILE", "emails.txt")
+EMAIL_LIST_FILE = config.EMAIL_LIST_FILE
 
 app = Flask(__name__, static_folder="../frontend/dist", static_url_path="")
 
@@ -23,9 +27,12 @@ def subscribe():
     end_hour = data.get("endHour", "")
     if not email:
         return jsonify({"message": "No email provided."}), 400
+    is_first = not has_subscribers()
     line = f"{email},{course},{start_hour},{end_hour}\n"
     with open(EMAIL_LIST_FILE, "a") as fh:
         fh.write(line)
+    if is_first:
+        Thread(target=monitor, daemon=True).start()
     return jsonify({"message": "Subscription saved!"})
 
 
